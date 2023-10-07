@@ -8,12 +8,10 @@ int main() {
     printf("Значения переменных до входа в параллельную область :\n");
     printf("a = %i, b = %i\n", a, b);
 
-    // Первая параллельная область (2 нити)
     #pragma omp parallel num_threads(2) private(a) firstprivate(b)
     {
         int thread_num = omp_get_thread_num();
-        a = 10; // из-за того, что переменная a получена как приватная переменна, 
-        // то инициализация до этой области не видна, чтобы это исправить, нужно инициализировать переменную внутри области
+        a = 10;
         a += thread_num;
         b += thread_num;
 
@@ -21,11 +19,10 @@ int main() {
         printf("a = %i, b = %i\n", a, b);
     }
 
-    // Вторая параллельная область (4 нити)
     #pragma omp parallel num_threads(4) shared(a) private(b)
     {
         int thread_num = omp_get_thread_num();
-        b = 20; // тут тоже самое, что и с переменной a в 1 области
+        b = 20;
         a -= thread_num;
         b -= thread_num;
 
