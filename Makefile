@@ -2,7 +2,7 @@ CC=g++-13
 CFLAGS = -Wall -std=c++11 -fopenmp
 TARGET = hello
 
-SOURCES = num1.cpp num2.cpp num3.cpp num4.cpp num5.cpp num6.cpp
+SOURCES = num1.cpp num2.cpp num3.cpp num4.cpp num5.cpp num6.cpp num7.cpp
 
 EXECUTABLES = $(SOURCES:.cpp=)
 
