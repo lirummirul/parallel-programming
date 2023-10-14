@@ -1,5 +1,6 @@
 #include <iostream>
 #include <omp.h>
+#include <semaphore.h>
 
 void parall1();
 void parall2();
@@ -8,53 +9,62 @@ void parall4();
 void parall5();
 
 int main() {
-    int num = 0;
+    char str[256], *num=str;
+    int digit = 0;
     printf("Введите число от 1 до 5 : \n");
-    scanf("%i", &num);
-    switch (num) {
-        case 1 :
-            parall1();
-            break;
-        case 2 :
-            parall2();
-            break;
-        case 3 :
-            parall3();
-            break;
-        case 4 :
-            parall4();
-            break;
-        case 5 :
-            parall5();
-            break;
-        default :
-            parall1();
-            break;
+    std::cin >> str;
+    while (str[0] != '-' && str[1] != '1') {
+        if (!isdigit(*num)) parall1();
+        else {
+            digit=atoi(str);
+            switch (digit) {
+                case 1 :
+                    parall1();
+                    break;
+                case 2 :
+                    parall2();
+                    break;
+                case 3 :
+                    parall3();
+                    break;
+                case 4 :
+                    parall4();
+                    break;
+                case 5 :
+                    parall5();
+                    break;
+                default :
+                    parall1();
+                    break;
+            }
+        }
+        std::cin >> str;
     }
-
 }
 
 void parall1() {
     printf("Способ № 1 : \n");
-    omp_lock_t lock;
-    omp_init_lock(&lock);
+
+    int thread_ids[8]; // Массив для хранения идентификаторов потоков
 
     #pragma omp parallel num_threads(8)
     {
         int k = omp_get_thread_num();
-        int size = omp_get_num_threads();
-        omp_set_lock(&lock);
-        printf("Hello World, thread %d out of %d\n", size - k - 1, size);
-        omp_unset_lock(&lock);
+        thread_ids[k] = k; // Сохраняем идентификатор потока
     }
-    omp_destroy_lock(&lock);
+
+    // Выводим идентификаторы в обратном порядке
+    for (int i = 7; i >= 0; i--) {
+        int k = thread_ids[i];
+        int size = 8;
+        printf("Hello World, thread %d out of %d\n", k, size);
+    }
 }
 
 void parall2() {
     printf("Способ № 2 : \n");
     #pragma omp parallel num_threads(8)
     {
-        // int k = omp_get_thread_num();
         int size = omp_get_num_threads();
 
     #pragma omp single
@@ -90,7 +100,6 @@ void parall4() {
     printf("Способ № 4 : \n");
     #pragma omp parallel num_threads(8)
     {
-        // int k = omp_get_thread_num();
         int size = omp_get_num_threads();
     #pragma omp master
         {
@@ -102,14 +111,20 @@ void parall4() {
 
 void parall5() {
     printf("Способ № 5 : \n");
-    int thread_ids[8] = {0};
     #pragma omp parallel num_threads(8)
     {
-        int k = omp_get_thread_num();
-        thread_ids[k] = k;
-    }
+        int size = omp_get_num_threads();
 
-    int size = omp_get_num_threads();
-    for (int i = size - 1; i >= 0; i--)
-        printf("Hello World, thread %d out of %d\n", thread_ids[i], size);
+        int k = omp_get_thread_num();
+        for (int i = size - 1; i >= 0; i--) {
+        #pragma omp barrier
+            {
+                if (i == omp_get_thread_num()) {
+                #pragma omp critical
+                    printf("Hello World, thread %d out of %d\n", k , size);
+                }
+            }
+        }
+    }
 }
+
