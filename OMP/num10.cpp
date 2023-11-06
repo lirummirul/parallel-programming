@@ -21,13 +21,20 @@ void parall(int d[x][y]) {
     #pragma omp parallel for num_threads(4)
     for (int i = 0; i < x; i++) {
         for (int j = 0; j < y; j++) {
-            #pragma omp critical
-            {
+            // тут тоже нужно условие ?? 
+            // #pragma omp critical
+            // {
                 if (d[i][j] < min)
+                #pragma omp critical
+                {
                     min = d[i][j];
+                }
                 if (d[i][j] > max)
+                 #pragma omp critical
+                { 
                     max = d[i][j];
-            }
+                }
+            // }
         }
     }
 

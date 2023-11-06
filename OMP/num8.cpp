@@ -57,7 +57,7 @@ int parall1(int a[x], int b[x]) {
 }
 
 void parall2(int a[x], int b[x]) {
-    #pragma omp parallel for schedule(dynamic) num_threads(8)
+    #pragma omp parallel for schedule(dynamic, 400) num_threads(8)
     for (int i = 1; i < x - 1; i++) {
         int sum = a[i - 1] + a[i] + a[i + 1];
         b[i] = static_cast<double>(sum) / 3.0;
@@ -65,7 +65,7 @@ void parall2(int a[x], int b[x]) {
 }
 
 void parall3(int a[x], int b[x]) {
-    #pragma omp parallel for schedule(guided) num_threads(8)
+    #pragma omp parallel for schedule(guided, 400) num_threads(8)
     for (int i = 1; i < x - 1; i++) {
         int sum = a[i - 1] + a[i] + a[i + 1];
         b[i] = static_cast<double>(sum) / 3.0;

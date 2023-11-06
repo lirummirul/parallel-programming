@@ -1,7 +1,7 @@
 #include <iostream>
 #include <omp.h>
 
-const int x = 250;
+const int x = 500;
 void init(double m[x][x]);
 void matrixVectorMultSequence(double m[x][x], double v[x], double res[x]);
 void matrixVectorMultParallelism(double m[x][x], double v[x], double res[x]);
