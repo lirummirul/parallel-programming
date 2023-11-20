@@ -2,16 +2,14 @@
 #include <mpi.h>
 
 int main(int argc, char* argv[]) {
-    MPI_Init(&argc, &argv);
-
     int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); // Получаем номер текущего процесса
-    MPI_Comm_size(MPI_COMM_WORLD, &size); // Получаем общее количество процессов
 
-    // Вывод "Hello, world!" на каждом процессе
-    std::cout << "Hello, world! from process " << rank << " of " << size << std::endl;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    printf("Hello world rom process : %i, from : %i!\n", rank, size);
     MPI_Finalize();
-
-    return 0;
 }
+
+// mpirun -n 4 ./num1

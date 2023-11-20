@@ -2,8 +2,7 @@ CC= mpic++
 CFLAGS = -Wall -Werror -Wextra -std=c++11
 TARGET = hello
 
-SOURCES = num1.cpp 
-# num2.cpp num3.cpp num4.cpp num5.cpp
+SOURCES = num1.cpp num2.cpp num3.cpp num4.cpp num5.cpp
 SOURCES2 = num6.cpp num7.cpp num8.cpp num9.cpp
 SOURCES3 = num10.cpp num11.cpp num12.cpp num13.cpp
 
