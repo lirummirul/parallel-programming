@@ -11,30 +11,24 @@ int main(int argc, char* argv[]) {
 
     const int arraySize = 16; // Размер исходного массива
     std::vector<int> data(arraySize);
-    int localCount = arraySize / size; // я запускаю на 4 процесса => 16 / 4 = 4
+    int localCount = 0;
+    //  = arraySize / size;;
+    if (arraySize % size != 0) localCount = arraySize / size + 1;
+    else localCount = arraySize / size;
+    //  = arraySize / size; // я запускаю на 4 процесса => 16 / 4 = 4
     // это количество элементов, которые каждый процесс ожидает получить в результате операции MPI_Scatterv
 
-    // Заполнение массива случайными числами (на каждом процессе)
-    // Это можно раскоментить, чтобы правильность быстро проверить
-    // for (int i = 0; i < arraySize; ++i) 
-    //     data[i] = (i - arraySize / 2); // Пример заполнения массива значениями
-
-    for (int i = 0; i < arraySize; ++i) {
-        if (i % 2 == 0) data[i] = (i - arraySize * rank / 2);
-        else data[i] = (i - arraySize / 2);
+    if (rank == 0) {
+        for (int i = 0; i < arraySize; ++i) {
+            if (i % 2 == 0) data[i] = (i - arraySize * rank / 2);
+            else data[i] = (i - arraySize / 2);
+             std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
     }
-
-    MPI_Barrier(MPI_COMM_WORLD); // Синхронизация всех процессов
-
-    std::cout << "Процесс " << rank << ": содержимое массива data: ";
-    for (int i = 0; i < arraySize; ++i) {
-        std::cout << data[i] << " ";
-    }
-    std::cout << std::endl;
 
     std::vector<int> localData(localCount); // массив с локальными данными (для каждого процесса, как я поняла) размером = 4 
 
-    // ------------------------------------------
     // Распределение данных через Scatterv
     std::vector<int> sendCounts(size, localCount); // Значения в этом векторе указывают, 
     // сколько элементов отправляется каждому процессу в результате операции MPI_Scatterv. 
@@ -72,18 +66,23 @@ int main(int argc, char* argv[]) {
     }
     // Что происходит выше, кажется мне понятным без коментариев 
 
-    int globalSum;
-    int globalPositiveCount;
+    int globalResults[2];
 
-    // Сбор результатов операцией Reduce с двумя числами
-    MPI_Reduce(&localSum, &globalSum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); // на каждом процессе вычисляем локальную сумму, потом находим сумму со всех процессов
-    MPI_Reduce(&localPositiveCount, &globalPositiveCount, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); // на каждом процесе 
+    int localResults[2];
+    localResults[0] = localSum;
+    localResults[1] = localPositiveCount;
+
+    MPI_Reduce(localResults, globalResults, 2, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+
+    // // Сбор результатов операцией Reduce с двумя числами
+    // MPI_Reduce(&localSum, &globalSum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); // на каждом процессе вычисляем локальную сумму, потом находим сумму со всех процессов
+    // MPI_Reduce(&localPositiveCount, &globalPositiveCount, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); // на каждом процесе 
 
     if (rank == 0) {
-        double average = static_cast<double>(globalSum) / static_cast<double>(globalPositiveCount);
+        double average = static_cast<double>(globalResults[0]) / static_cast<double>(globalResults[1]);
         std::cout << "Среднее арифметическое среди положительных чисел: " << average << std::endl;
     }
 
     MPI_Finalize();
-    return 0;
 }

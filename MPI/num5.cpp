@@ -12,13 +12,16 @@ int main(int argc, char* argv[]) {
     const int vectorSize = 8; // Размер векторов
     std::vector<int> vectorA(vectorSize);
     std::vector<int> vectorB(vectorSize);
+    int localCount = 0;
+    if (vectorSize % size != 0) localCount = vectorSize / size + 1;
+    else localCount = vectorSize / size;
 
     for (int i = 0; i < vectorSize; ++i) {
         vectorA[i] = i + 1;
         vectorB[i] = vectorSize - i;
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    // MPI_Barrier(MPI_COMM_WORLD);
 
     std::cout << "VectorA процесс : " << rank << ": содержимое массива data: ";
     for (int i = 0; i < vectorSize; ++i)
@@ -30,18 +33,22 @@ int main(int argc, char* argv[]) {
         std::cout << vectorB[i] << " ";
     std::cout << std::endl;
 
-    std::vector<int> localVectorA(vectorSize / size);
-    std::vector<int> localVectorB(vectorSize / size);
+    // ------------------------------------------
+    // Локальные вектора для A и B для каждого процесса 
+    std::vector<int> localVectorA(localCount);
+    std::vector<int> localVectorB(localCount);
 
     // Распределение данных через Scatterv
-    std::vector<int> sendCounts(size, vectorSize / size);
-    std::vector<int> displacements(size, 0);
+    std::vector<int> sendCounts(size, localCount); // Количество данных, отправляемых каждому процессу
+    std::vector<int> displacements(size, 0); // Смещение для каждого процесса в Scatterv
     for (int i = 1; i < size; ++i)
-        displacements[i] = displacements[i - 1] + vectorSize / size;
+        displacements[i] = displacements[i - 1] + localCount;
 
-    MPI_Scatterv(vectorA.data(), sendCounts.data(), displacements.data(), MPI_INT, localVectorA.data(), vectorSize / size, MPI_INT, 0, MPI_COMM_WORLD);
+    // Распределение данных вектора A по процессам
+    MPI_Scatterv(vectorA.data(), sendCounts.data(), displacements.data(), MPI_INT, localVectorA.data(), localCount, MPI_INT, 0, MPI_COMM_WORLD);
 
-    MPI_Scatterv(vectorB.data(), sendCounts.data(), displacements.data(), MPI_INT, localVectorB.data(), vectorSize / size, MPI_INT, 0, MPI_COMM_WORLD);
+    // Распределение данных вектора B по процессам  
+    MPI_Scatterv(vectorB.data(), sendCounts.data(), displacements.data(), MPI_INT, localVectorB.data(), localCount, MPI_INT, 0, MPI_COMM_WORLD);
 
     int localDotProduct = 0;
 
